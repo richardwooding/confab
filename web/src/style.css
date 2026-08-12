@@ -23,6 +23,7 @@
 .home-card label { font-size: 0.85rem; color: var(--gl-muted); }
 .gl-hint-inline { color: var(--gl-muted); font-weight: normal; }
 .home-card input,
+.preflight-card input,
 .chat-form input {
   background: var(--gl-panel-2);
   border: 1px solid var(--gl-border);
@@ -32,14 +33,14 @@
   font: inherit;
 }
 .home-card input:focus-visible,
+.preflight-card input:focus-visible,
 .chat-form input:focus-visible {
   outline: 2px solid var(--gl-accent);
   outline-offset: 1px;
 }
 .home-actions { display: flex; }
 .home-actions .gl-btn { flex: 1; }
-.join-row { display: flex; gap: 0.5rem; }
-.join-row input { flex: 1; font-family: var(--gl-mono, monospace); }
+#join-phrase { font-family: var(--gl-mono, monospace); }
 .home-foot { text-align: center; padding: 1rem 0 2rem; }
 .home-foot a { color: var(--gl-muted); }
 
@@ -65,6 +66,10 @@
   transform: scaleX(-1);
 }
 .preflight-controls, .preflight-actions { display: flex; gap: 0.6rem; justify-content: center; }
+#preflight-context { margin: -0.4rem 0 0; }
+.phrase-inline { font-family: var(--gl-mono, monospace); color: var(--gl-accent-2, var(--gl-accent)); }
+.pf-name-row { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+.pf-name-row label { font-size: 0.85rem; color: var(--gl-muted); }
 .preflight-actions .gl-btn { min-width: 8rem; }
 
 /* ---- call ---- */

@@ -54,11 +54,23 @@
     location.replace(location.pathname);
   }
   window.addEventListener("popstate", () => {
-    if (state.inCall && !confirm("Leave the call?")) {
+    if (!state.inCall) return; // hash-only navigations are handled below
+    if (!confirm("Leave the call?")) {
       history.pushState({ k: "call" }, "");
       return;
     }
     leaveToHome();
+  });
+
+  // Opening an invite link while the app is already loaded is a
+  // same-document navigation (only the #phrase changes): route it to
+  // preflight exactly like a fresh load would.
+  window.addEventListener("hashchange", () => {
+    const invite = decodeURIComponent(location.hash.slice(1)).trim();
+    if (!state.inCall && invite) {
+      $("join-phrase").value = invite;
+      preflight("join");
+    }
   });
 
   // ---- preflight --------------------------------------------------------
@@ -67,6 +79,17 @@
     show("preflight");
     $("preflight-title").textContent = mode === "create" ? "Start your call" : "Ready to join?";
     $("btn-go").textContent = mode === "create" ? "Start call" : "Join call";
+    $("pf-name").value = $("name").value || localStorage.getItem("confab-name") || "";
+    const ctx = $("preflight-context");
+    if (mode === "create") {
+      ctx.textContent = "You'll get a fresh phrase to share.";
+    } else {
+      ctx.textContent = "Joining ";
+      const ph = document.createElement("span");
+      ph.className = "phrase-inline";
+      ph.textContent = phraseValue();
+      ctx.appendChild(ph);
+    }
     const got = await window.confabCall.acquire();
     const status = $("preview-status");
     if (got === "av") {
@@ -95,10 +118,10 @@
   }
 
   $("btn-go").addEventListener("click", () => {
-    const name = $("name").value.trim();
+    const name = $("pf-name").value.trim();
     localStorage.setItem("confab-name", name);
     if (state.mode === "create") send({ type: "create", name });
-    else send({ type: "join", phrase: $("join-phrase").value, name });
+    else send({ type: "join", phrase: phraseValue(), name });
     $("btn-go").disabled = true;
   });
   $("btn-back-home").addEventListener("click", () => leaveToHome());
@@ -176,14 +199,13 @@
   // ---- core events ---------------------------------------------------------
   const handlers = {
     "core.ready"(e) {
-      $("btn-new").disabled = false;
-      $("btn-join").disabled = false;
+      $("btn-action").disabled = false;
       $("home-status").textContent = "";
-      const invite = decodeURIComponent(location.hash.slice(1));
+      const invite = decodeURIComponent(location.hash.slice(1)).trim();
       if (invite) {
+        // Invitees never see the start/join choice: straight to preflight.
         $("join-phrase").value = invite;
-        $("invite-banner").hidden = false;
-        $("name").focus();
+        preflight("join");
       }
     },
     "error"(e) {
@@ -234,14 +256,29 @@
   };
 
   // ---- home wiring -----------------------------------------------------------
+  // phraseValue reads the live field, trimmed; pasting a full invite URL
+  // still joins — everything after the last "#" is the phrase.
+  function phraseValue() {
+    let v = $("join-phrase").value.trim();
+    const hash = v.lastIndexOf("#");
+    if (hash !== -1) v = v.slice(hash + 1).trim();
+    return v;
+  }
+
+  // The phrase field is the mode switch: one primary action, no wrong button.
+  function syncAction() {
+    $("btn-action").textContent = phraseValue() ? "Join this call" : "▶ Start a new call";
+  }
+
   $("name").value = localStorage.getItem("confab-name") || "";
-  $("btn-new").addEventListener("click", () => preflight("create"));
-  $("btn-join").addEventListener("click", () => {
-    if (!$("join-phrase").value.trim()) { toast("enter a code phrase"); return; }
-    preflight("join");
+  $("join-phrase").addEventListener("input", syncAction);
+  syncAction();
+  $("btn-action").addEventListener("click", () => {
+    // Mode is computed at click time from the live field, never cached.
+    preflight(phraseValue() ? "join" : "create");
   });
   $("join-phrase").addEventListener("keydown", (ev) => {
-    if (ev.key === "Enter") $("btn-join").click();
+    if (ev.key === "Enter") $("btn-action").click();
   });
 
   fetch("/version").then((r) => r.text()).then((v) => { $("version-badge").textContent = "confab " + v; }).catch(() => {});

@@ -29,17 +29,12 @@
           <div class="home-card">
             <label for="name">Your name <span class="gl-hint-inline">(optional)</span></label>
             <input id="name" type="text" maxlength="24" autocomplete="nickname" placeholder="e.g. Alex">
+            <label for="join-phrase">Have a code phrase? <span class="gl-hint-inline">(leave empty to start fresh)</span></label>
+            <input id="join-phrase" type="text" autocapitalize="none" autocomplete="off"
+                   spellcheck="false" placeholder="paste it here — like lion-42-maple">
             <div class="home-actions">
-              <button id="btn-new" class="gl-btn primary" disabled>New call</button>
+              <button id="btn-action" class="gl-btn primary" disabled>▶ Start a new call</button>
             </div>
-            <div class="join-row">
-              <input id="join-phrase" type="text" autocapitalize="none" autocomplete="off"
-                     spellcheck="false" placeholder="code phrase — like lion-42-maple">
-              <button id="btn-join" class="gl-btn ghost" disabled>Join</button>
-            </div>
-            <label class="watch-note gl-hint" id="invite-banner" hidden>
-              You've been invited — check your name and join.
-            </label>
             <p id="home-status" class="gl-hint" role="status" aria-live="polite">loading the encrypted core…</p>
           </div>
         </div>
@@ -68,6 +63,7 @@
     <section id="view-preflight" class="view hidden" aria-label="Call preview">
       <div class="preflight-card">
         <h2 id="preflight-title">Ready to join?</h2>
+        <p id="preflight-context" class="gl-hint" aria-live="polite"></p>
         <div class="preview-wrap">
           <video id="preview" autoplay playsinline muted></video>
           <p id="preview-status" class="gl-hint" role="status" aria-live="polite">requesting camera &amp; microphone…</p>
@@ -75,6 +71,10 @@
         <div class="preflight-controls">
           <button id="pf-mic" class="ctl-btn" aria-pressed="true" aria-label="Toggle microphone">🎙️</button>
           <button id="pf-cam" class="ctl-btn" aria-pressed="true" aria-label="Toggle camera">📷</button>
+        </div>
+        <div class="pf-name-row">
+          <label for="pf-name">Your name <span class="gl-hint-inline">(optional)</span></label>
+          <input id="pf-name" type="text" maxlength="24" autocomplete="nickname" placeholder="e.g. Alex">
         </div>
         <div class="preflight-actions">
           <button id="btn-go" class="gl-btn primary">Join call</button>
