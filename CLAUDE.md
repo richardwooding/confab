@@ -47,6 +47,16 @@ GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/confab-wasm   # WASM check (CI r
   gloam.css/gloam.js are vendored in web/src and refreshed by
   .github/workflows/gloam-sync.yml — don't hand-edit them.
 
+## Admin dashboard (opt-in)
+
+An optional GitHub-OAuth-gated dashboard (parley/dashboard, branded
+AppName "confab") mounts at /dashboard when all DASHBOARD_* env vars are
+set — DASHBOARD_GITHUB_CLIENT_ID, _CLIENT_SECRET, _COOKIE_KEY (≥16 bytes),
+_BASE_URL, _ALLOW (comma-separated GitHub usernames). Dormant otherwise
+(the public build carries no secrets). It reads only the relay's blind
+Stats() snapshot — aggregate counters and participant counts, never call
+contents. Set the secrets as Fly secrets to enable it in production.
+
 ## Releasing and deploy
 
 Tag push (vX.Y.Z) triggers goreleaser: binaries + ghcr.io/richardwooding/
