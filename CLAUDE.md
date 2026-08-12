@@ -50,7 +50,7 @@ GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/confab-wasm   # WASM check (CI r
 ## Releasing and deploy
 
 Tag push (vX.Y.Z) triggers goreleaser: binaries + ghcr.io/richardwooding/
-confab image (ko, web client embedded). Hosted at confab.fly.dev — exactly
+confab image (ko, web client embedded). Hosted at confab-call.fly.dev — exactly
 ONE always-on machine (in-memory relay; never enable auto-stop or scale
 past 1). Deploys drop relay connections mid-call: media keeps flowing P2P
 and clients auto-resume signaling (reconnect = resume).

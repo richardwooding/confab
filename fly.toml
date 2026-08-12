@@ -1,7 +1,7 @@
 # confab runs as exactly ONE always-on machine: the relay holds live call
 # sessions in memory, so auto-stop or a second machine would kill or split
 # calls in progress. Media is peer-to-peer and never touches this server.
-app = "confab"
+app = "confab-call"
 primary_region = "jnb"
 
 [build]
