@@ -1,0 +1,26 @@
+# confab runs as exactly ONE always-on machine: the relay holds live call
+# sessions in memory, so auto-stop or a second machine would kill or split
+# calls in progress. Media is peer-to-peer and never touches this server.
+app = "confab"
+primary_region = "jnb"
+
+[build]
+  image = "ghcr.io/richardwooding/confab:latest"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

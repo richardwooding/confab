@@ -1,0 +1,97 @@
+# GoReleaser configuration for confab.
+# Docs: https://goreleaser.com
+version: 2
+
+project_name: confab
+
+before:
+  hooks:
+    - go mod tidy
+    # Build the browser core so the relay binary embeds a complete web client.
+    - make wasm
+
+builds:
+  - id: confab
+    main: ./cmd/confab
+    binary: confab
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: default
+    ids: [confab]
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^chore:"
+      - "^test:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: Features
+      regexp: '^feat(\(.+\))?!?:'
+      order: 0
+    - title: Bug fixes
+      regexp: '^fix(\(.+\))?!?:'
+      order: 1
+    - title: Others
+      order: 999
+
+# Container images built with ko (cross-compiled, no Docker/buildx needed).
+# confab is pure static (CGO_ENABLED=0, shells out to nothing), so the
+# chainguard static base is enough. The `before` hooks above run `make wasm`,
+# so the image embeds the same web client as the release binaries.
+kos:
+  - id: confab
+    build: confab
+    repositories:
+      - ghcr.io/richardwooding/confab
+    base_image: cgr.dev/chainguard/static
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    tags:
+      - "{{.Version}}"
+      - "{{ if not .Prerelease }}latest{{ end }}"
+    sbom: spdx
+    bare: true
+    preserve_import_paths: false
+    labels:
+      org.opencontainers.image.source: "https://github.com/richardwooding/confab"
+      org.opencontainers.image.licenses: "MIT"
+      org.opencontainers.image.description: "croc-style pairing for E2E-encrypted game & chat sessions — blind relay + embedded web client"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.revision: "{{.Commit}}"
+
+release:
+  github:
+    owner: richardwooding
+    name: confab

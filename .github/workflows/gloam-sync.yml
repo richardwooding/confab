@@ -1,0 +1,63 @@
+# Scheduled gloam sync — opens a PR when the vendored gloam.css/gloam.js
+# drift from upstream (github.com/richardwooding/gloam@main).
+#
+# Copy this into a consumer's .github/workflows/ and set GLOAM_DIR to the
+# directory that holds gloam.css/gloam.js (e.g. "site" or "docs").
+#
+# Prerequisite (one-time, per consumer repo): the drift PR is opened with the
+# built-in GITHUB_TOKEN, so the repo must allow it. Enable
+#   Settings -> Actions -> General -> Workflow permissions ->
+#   "Allow GitHub Actions to create and approve pull requests"
+# or run once from inside the consumer repo (gh expands {owner}/{repo}):
+#   gh api -X PUT repos/{owner}/{repo}/actions/permissions/workflow \
+#     -F can_approve_pull_request_reviews=true
+# Without it the sync commit still pushes, but `gh pr create` fails with
+# "GitHub Actions is not permitted to create or approve pull requests." This is
+# per-repo — user-owned accounts have no org-wide default to inherit.
+name: gloam-sync
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GLOAM_DIR: web/src
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync gloam assets
+        run: sh scripts/sync-gloam.sh "$GLOAM_DIR"
+
+      - name: Open a PR if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "gloam already up to date."
+            exit 0
+          fi
+          BRANCH="chore/gloam-sync"
+          COMMIT="$(sed -n 's/^commit=//p' "$GLOAM_DIR/.gloam-version")"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git add -A
+          git commit -m "chore(site): sync gloam assets to ${COMMIT}"
+          git push -f origin "$BRANCH"
+          STATE="$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null || true)"
+          if [ "$STATE" = "OPEN" ]; then
+            echo "PR already open; updated the branch."
+          else
+            gh pr create --base "${GITHUB_REF_NAME}" --head "$BRANCH" \
+              --title "chore(site): sync gloam design assets" \
+              --body "Automated sync of \`gloam.css\`/\`gloam.js\` from [richardwooding/gloam](https://github.com/richardwooding/gloam)@\`${COMMIT}\`. See \`$GLOAM_DIR/.gloam-version\`."
+          fi

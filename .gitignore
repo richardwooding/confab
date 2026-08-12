@@ -1,0 +1,6 @@
+/confab
+web/dist/*
+!web/dist/.gitkeep
+*.test
+*.out
+dist/
