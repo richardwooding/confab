@@ -1,0 +1,208 @@
+/* confab app styles — gloam idiom: tokens only, one purple accent, dark-first.
+   gloam.css provides the base; this file is the app chrome. */
+
+/* state class must beat per-view id display rules */
+.view.hidden { display: none !important; }
+
+/* the hidden ATTRIBUTE must beat author display rules (flex/grid tiles,
+   panes, badges) — the UA default loses to any author display. */
+[hidden] { display: none !important; }
+
+/* ---- home ---- */
+.home-card {
+  margin-top: 1.4rem;
+  background: var(--gl-panel);
+  border: 1px solid var(--gl-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-width: 26rem;
+}
+.home-card label { font-size: 0.85rem; color: var(--gl-muted); }
+.gl-hint-inline { color: var(--gl-muted); font-weight: normal; }
+.home-card input,
+.chat-form input {
+  background: var(--gl-panel-2);
+  border: 1px solid var(--gl-border);
+  border-radius: 10px;
+  color: var(--gl-fg);
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+}
+.home-card input:focus-visible,
+.chat-form input:focus-visible {
+  outline: 2px solid var(--gl-accent);
+  outline-offset: 1px;
+}
+.home-actions { display: flex; }
+.home-actions .gl-btn { flex: 1; }
+.join-row { display: flex; gap: 0.5rem; }
+.join-row input { flex: 1; font-family: var(--gl-mono, monospace); }
+.home-foot { text-align: center; padding: 1rem 0 2rem; }
+.home-foot a { color: var(--gl-muted); }
+
+/* ---- preflight ---- */
+#view-preflight { display: grid; place-items: center; min-height: 80vh; padding: 1rem; }
+.preflight-card {
+  background: var(--gl-panel);
+  border: 1px solid var(--gl-border);
+  border-radius: 14px;
+  padding: 1.4rem;
+  width: min(30rem, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  text-align: center;
+}
+.preview-wrap video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--gl-panel-2);
+  border-radius: 10px;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.preflight-controls, .preflight-actions { display: flex; gap: 0.6rem; justify-content: center; }
+.preflight-actions .gl-btn { min-width: 8rem; }
+
+/* ---- call ---- */
+#view-call { height: 100dvh; }
+.call-layout { display: flex; height: 100%; }
+.stage { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+
+.grid {
+  flex: 1;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  align-content: center;
+  grid-template-columns: 1fr;
+}
+.grid[data-n="2"] { grid-template-columns: repeat(2, 1fr); }
+.grid[data-n="3"], .grid[data-n="4"] { grid-template-columns: repeat(2, 1fr); }
+.grid[data-n="5"], .grid[data-n="6"] { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 700px) {
+  .grid[data-n], .grid { grid-template-columns: 1fr !important; overflow-y: auto; align-content: start; }
+}
+
+.tile {
+  position: relative;
+  background: var(--gl-panel-2);
+  border: 1px solid var(--gl-border);
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+.tile video { width: 100%; height: 100%; object-fit: cover; }
+.tile.self video { transform: scaleX(-1); }
+.tile .tag {
+  position: absolute; left: 0.6rem; bottom: 0.5rem;
+  background: color-mix(in srgb, var(--gl-bg) 70%, transparent);
+  color: var(--gl-fg);
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+.tile .badge {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--gl-bg) 55%, transparent);
+  color: var(--gl-fg);
+  font-size: 0.95rem;
+}
+
+.ctl-bar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem;
+}
+.ctl-btn {
+  background: var(--gl-panel);
+  border: 1px solid var(--gl-border);
+  border-radius: 999px;
+  width: 2.9rem; height: 2.9rem;
+  font-size: 1.15rem;
+  cursor: pointer;
+  position: relative;
+  color: var(--gl-fg);
+}
+.ctl-btn:hover { border-color: var(--gl-accent); }
+.ctl-btn:focus-visible { outline: 2px solid var(--gl-accent); outline-offset: 2px; }
+.ctl-btn.off { background: color-mix(in srgb, var(--gl-amber) 25%, var(--gl-panel)); }
+.ctl-btn.leave { background: color-mix(in srgb, #e5484d 30%, var(--gl-panel)); }
+.count { color: var(--gl-muted); font-family: var(--gl-mono, monospace); font-size: 0.9rem; }
+.unread {
+  position: absolute; top: -0.25rem; right: -0.25rem;
+  background: var(--gl-accent); color: #fff;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  min-width: 1.1rem; height: 1.1rem;
+  display: grid; place-items: center;
+  padding: 0 0.25rem;
+}
+
+/* invite overlay */
+.invite-card {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: min(24rem, calc(100% - 2rem));
+  background: var(--gl-panel);
+  border: 1px solid var(--gl-border);
+  border-radius: 14px;
+  padding: 1.3rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: center;
+  z-index: 5;
+}
+.invite-card .phrase {
+  font-family: var(--gl-mono, monospace);
+  font-size: 1.35rem;
+  color: var(--gl-accent-2, var(--gl-accent));
+}
+.invite-card img { border-radius: 10px; background: #fff; padding: 6px; }
+.invite-actions { display: flex; gap: 0.6rem; }
+
+/* chat */
+.chat-pane {
+  width: min(20rem, 85vw);
+  border-left: 1px solid var(--gl-border);
+  background: var(--gl-panel);
+  display: flex;
+  flex-direction: column;
+}
+.chat-log { flex: 1; overflow-y: auto; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.chat-log p { margin: 0; font-size: 0.92rem; overflow-wrap: anywhere; }
+.chat-log b { color: var(--gl-accent-2, var(--gl-accent)); margin-right: 0.25rem; }
+.chat-form { display: flex; gap: 0.4rem; padding: 0.6rem; border-top: 1px solid var(--gl-border); }
+.chat-form input { flex: 1; min-width: 0; }
+@media (max-width: 700px) {
+  .chat-pane { position: fixed; right: 0; top: 0; bottom: 0; z-index: 10; }
+}
+
+/* toast + reconnect */
+.toast {
+  position: fixed; left: 50%; bottom: 4.6rem; transform: translateX(-50%);
+  background: var(--gl-panel);
+  border: 1px solid var(--gl-accent);
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+  z-index: 20;
+}
+.reconnect {
+  position: fixed; left: 50%; top: 0.8rem; transform: translateX(-50%);
+  background: color-mix(in srgb, var(--gl-amber) 22%, var(--gl-panel));
+  border: 1px solid var(--gl-amber);
+  border-radius: 10px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  z-index: 20;
+}

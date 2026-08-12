@@ -1,1 +1,134 @@
-<!doctype html><meta charset="utf-8"><title>confab</title><p>confab — coming right up.
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>confab — phrase-paired video calls</title>
+  <meta name="description" content="Video calls that pair like croc: a code phrase, end-to-end-encrypted signaling, and media that never touches the server.">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="stylesheet" href="gloam.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <script>try{var t=localStorage.getItem("gl-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body class="gl">
+  <a class="gl-skip" href="#main">Skip to content</a>
+
+  <main id="main">
+    <!-- home: gloam hero + start/join card -->
+    <section id="view-home" class="view gl-hero">
+      <div class="gl-wrap gl-hero-grid">
+        <div>
+          <p class="gl-eyebrow">no accounts · e2ee signaling · p2p media</p>
+          <h1>Video calls that pair <span class="gl-grad">like a secret.</span></h1>
+          <p class="sub">Start a call, share the phrase. Signaling is end-to-end
+          encrypted through a relay that can't read it, and your audio and video
+          never touch the server at all.</p>
+
+          <div class="home-card">
+            <label for="name">Your name <span class="gl-hint-inline">(optional)</span></label>
+            <input id="name" type="text" maxlength="24" autocomplete="nickname" placeholder="e.g. Alex">
+            <div class="home-actions">
+              <button id="btn-new" class="gl-btn primary" disabled>New call</button>
+            </div>
+            <div class="join-row">
+              <input id="join-phrase" type="text" autocapitalize="none" autocomplete="off"
+                     spellcheck="false" placeholder="code phrase — like lion-42-maple">
+              <button id="btn-join" class="gl-btn ghost" disabled>Join</button>
+            </div>
+            <label class="watch-note gl-hint" id="invite-banner" hidden>
+              You've been invited — check your name and join.
+            </label>
+            <p id="home-status" class="gl-hint" role="status" aria-live="polite">loading the encrypted core…</p>
+          </div>
+        </div>
+        <div class="gl-term">
+          <div class="bar">
+            <span class="dot" style="background:#ff5f56"></span>
+            <span class="dot" style="background:#ffbd2e"></span>
+            <span class="dot" style="background:#27c93f"></span>
+            <span class="t">confab</span>
+          </div>
+<pre><span class="pr">$</span> confab new
+<span class="hd">PHRASE          STATUS</span>
+<span class="n">lion-42-maple</span>   <span class="ok">waiting for peers</span>
+<span class="pr">$</span> _ signaling <span class="loc">e2ee via blind relay</span>
+<span class="pr">$</span> _ media     <span class="loc">peer-to-peer, never relayed</span></pre>
+        </div>
+      </div>
+      <footer class="home-foot gl-hint">
+        <span id="version-badge"></span> ·
+        <a href="https://github.com/richardwooding/confab">GitHub</a> ·
+        built on <a href="https://github.com/richardwooding/parley">parley</a>
+      </footer>
+    </section>
+
+    <!-- preflight: camera/mic preview before joining -->
+    <section id="view-preflight" class="view hidden" aria-label="Call preview">
+      <div class="preflight-card">
+        <h2 id="preflight-title">Ready to join?</h2>
+        <div class="preview-wrap">
+          <video id="preview" autoplay playsinline muted></video>
+          <p id="preview-status" class="gl-hint" role="status" aria-live="polite">requesting camera &amp; microphone…</p>
+        </div>
+        <div class="preflight-controls">
+          <button id="pf-mic" class="ctl-btn" aria-pressed="true" aria-label="Toggle microphone">🎙️</button>
+          <button id="pf-cam" class="ctl-btn" aria-pressed="true" aria-label="Toggle camera">📷</button>
+        </div>
+        <div class="preflight-actions">
+          <button id="btn-go" class="gl-btn primary">Join call</button>
+          <button id="btn-back-home" class="gl-btn ghost">Back</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- call: video grid + controls + chat -->
+    <section id="view-call" class="view hidden" aria-label="Call">
+      <div class="call-layout">
+        <div class="stage">
+          <div id="grid" class="grid"></div>
+
+          <div id="invite-card" class="invite-card" hidden>
+            <h2>You're the first one here</h2>
+            <p>Share the phrase — or the link — and keep this tab open.</p>
+            <p class="phrase" id="invite-phrase"></p>
+            <img id="invite-qr" alt="QR code for the call link" width="220" height="220">
+            <div class="invite-actions">
+              <button id="btn-copy-link" class="gl-btn primary">Copy link</button>
+              <button id="btn-copy-phrase" class="gl-btn ghost">Copy phrase</button>
+            </div>
+          </div>
+
+          <div class="ctl-bar">
+            <button id="ctl-mic" class="ctl-btn" aria-pressed="true" aria-label="Toggle microphone">🎙️</button>
+            <button id="ctl-cam" class="ctl-btn" aria-pressed="true" aria-label="Toggle camera">📷</button>
+            <button id="ctl-invite" class="ctl-btn" aria-label="Show invite">➕</button>
+            <button id="ctl-chat" class="ctl-btn" aria-expanded="false" aria-label="Toggle chat">💬<span id="chat-unread" class="unread" hidden></span></button>
+            <span id="count" class="count" title="Participants">1/6</span>
+            <button id="ctl-leave" class="ctl-btn leave" aria-label="Leave call">📴</button>
+          </div>
+        </div>
+
+        <aside id="chat-pane" class="chat-pane" hidden aria-label="Chat">
+          <div id="chat-log" class="chat-log" role="log" aria-live="polite"></div>
+          <form id="chat-form" class="chat-form">
+            <input id="chat-input" type="text" maxlength="4000" placeholder="say something…" autocomplete="off">
+            <button class="gl-btn primary" type="submit" aria-label="Send">➤</button>
+          </form>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+  <div id="reconnect-banner" class="reconnect" role="status" hidden>
+    reconnecting to the server — your call is unaffected
+  </div>
+
+  <script src="wasm_exec.js"></script>
+  <script src="gloam.js" defer></script>
+  <script src="call.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

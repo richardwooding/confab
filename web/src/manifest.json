@@ -1,0 +1,13 @@
+{
+  "name": "confab",
+  "short_name": "confab",
+  "description": "Phrase-paired video calls with end-to-end-encrypted signaling.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
