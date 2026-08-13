@@ -8,7 +8,6 @@ package main
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -179,12 +178,6 @@ func main() {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		_, _ = fmt.Fprintf(w, "%s %s\n", os.Getenv("FLY_MACHINE_ID"), os.Getenv("FLY_REGION"))
 	})
-	if aff != nil {
-		mux.HandleFunc("/debug/peers", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(aff.Debug(r.Context()))
-		})
-	}
 
 	// Admin dashboard (GitHub-OAuth-gated) — only wired up when its Fly
 	// secrets are present, so it's dormant locally and in the public build.

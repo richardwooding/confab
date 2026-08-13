@@ -103,3 +103,35 @@ func TestRouteReplaysToOwner(t *testing.T) {
 		t.Fatal("owner should serve here")
 	}
 }
+
+// parseVMs must handle Fly's real vms.<app>.internal TXT shape: comma-separated
+// entries, each "<machine_id> <region>", usually in one record.
+func TestParseVMs(t *testing.T) {
+	cases := []struct {
+		name string
+		txts []string
+		want []string
+	}{
+		{"single record, two entries",
+			[]string{"811d5d2f471098 jnb,8254dea7ed4458 jnb"},
+			[]string{"811d5d2f471098", "8254dea7ed4458"}},
+		{"one machine",
+			[]string{"aaa111 jnb"},
+			[]string{"aaa111"}},
+		{"separate records",
+			[]string{"aaa111 jnb", "bbb222 ord"},
+			[]string{"aaa111", "bbb222"}},
+		{"empty", nil, nil},
+	}
+	for _, tc := range cases {
+		got := parseVMs(tc.txts)
+		if len(got) != len(tc.want) {
+			t.Fatalf("%s: got %v, want %v", tc.name, got, tc.want)
+		}
+		for i := range got {
+			if got[i] != tc.want[i] {
+				t.Fatalf("%s: got %v, want %v", tc.name, got, tc.want)
+			}
+		}
+	}
+}

@@ -82,31 +82,6 @@ func (a *Resolver) Peers(ctx context.Context) ([]string, error) {
 	return out, nil
 }
 
-// Debug returns raw discovery data for one-off diagnostics: the TXT records
-// of vms.<app>.internal, the AAAA of <app>.internal, and the machine-id set
-// this resolver currently parses. Temporary — remove after verifying.
-func (a *Resolver) Debug(ctx context.Context) map[string]any {
-	res := a.res
-	if res == nil {
-		res = net.DefaultResolver
-	}
-	lctx, cancel := context.WithTimeout(ctx, 2*time.Second)
-	defer cancel()
-	out := map[string]any{"self": a.self, "app": a.app}
-	if txts, err := res.LookupTXT(lctx, "vms."+a.app+".internal"); err != nil {
-		out["vms_txt_err"] = err.Error()
-	} else {
-		out["vms_txt"] = txts
-	}
-	if ips, err := res.LookupHost(lctx, a.app+".internal"); err != nil {
-		out["app_aaaa_err"] = err.Error()
-	} else {
-		out["app_aaaa"] = ips
-	}
-	out["parsed_machines"] = a.machines(ctx)
-	return out
-}
-
 // machines returns the cached machine-id set (peers + self), refreshing from
 // Fly DNS when the cache is older than ttl. On lookup failure it serves the
 // last good set, or falls back to just self (degraded → serve-here).
@@ -129,17 +104,29 @@ func (a *Resolver) machines(ctx context.Context) []string {
 		}
 		return []string{a.self}
 	}
-	ids := make([]string, 0, len(txts))
-	for _, t := range txts {
-		if id, _, ok := strings.Cut(t, ","); ok && id != "" {
-			ids = append(ids, id)
-		}
-	}
+	ids := parseVMs(txts)
 	if len(ids) == 0 {
 		ids = []string{a.self}
 	}
 	sort.Strings(ids)
 	a.cached, a.fetchedAt = ids, time.Now()
+	return ids
+}
+
+// parseVMs extracts machine ids from vms.<app>.internal TXT records. Fly
+// returns the fleet as comma-separated entries, each "<machine_id> <region>"
+// (typically a single record holding all entries), e.g.
+// "811d5d2f471098 jnb,8254dea7ed4458 jnb". The id is the first whitespace
+// field of each comma-separated entry.
+func parseVMs(txts []string) []string {
+	var ids []string
+	for _, rec := range txts {
+		for _, entry := range strings.Split(rec, ",") {
+			if f := strings.Fields(entry); len(f) > 0 {
+				ids = append(ids, f[0])
+			}
+		}
+	}
 	return ids
 }
 
