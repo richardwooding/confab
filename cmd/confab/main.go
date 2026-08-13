@@ -85,9 +85,20 @@ func precompressed(dist fs.FS, raw http.Handler) http.HandlerFunc {
 			if err != nil {
 				continue
 			}
+			// Revalidate every load against a content ETag: an unchanged asset
+			// costs a cheap 304, but a deploy is picked up immediately. The
+			// embedded files carry no modtime, so without this the browser can
+			// heuristically cache them and serve a stale shell after a deploy.
+			etag := fmt.Sprintf("\"%x\"", sha256.Sum256(b))
 			h := w.Header()
-			h.Set("Content-Encoding", e.token)
+			h.Set("ETag", etag)
+			h.Set("Cache-Control", "no-cache")
 			h.Add("Vary", "Accept-Encoding")
+			if r.Header.Get("If-None-Match") == etag {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
+			h.Set("Content-Encoding", e.token)
 			h.Set("Content-Type", contentType(p))
 			_, _ = w.Write(b)
 			return
