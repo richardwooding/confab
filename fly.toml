@@ -15,11 +15,19 @@ primary_region = "jnb"
   min_machines_running = 1
 
   [[http_service.checks]]
-    interval = "30s"
+    interval = "10s"
     timeout = "5s"
     grace_period = "10s"
     method = "GET"
     path = "/healthz"
+
+# Rolling deploy: replace one machine at a time so at most 1/N sessions churn.
+# Session affinity (relay Options.Router) keeps each session pinned to one
+# machine; a replaced machine's in-flight calls recover via reconnect=rejoin.
+# Going multi-node is an explicit `fly scale count N` (+ min_machines_running N).
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 1
 
 [[vm]]
   size = "shared-cpu-1x"
