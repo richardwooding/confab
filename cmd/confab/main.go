@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/richardwooding/confab/internal/flyaffinity"
 	"github.com/richardwooding/confab/web"
+	"github.com/richardwooding/flyaffinity"
 	"github.com/richardwooding/parley/dashboard"
 	"github.com/richardwooding/parley/relay"
 	"github.com/richardwooding/parley/wire"
