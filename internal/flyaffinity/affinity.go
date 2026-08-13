@@ -82,6 +82,31 @@ func (a *Resolver) Peers(ctx context.Context) ([]string, error) {
 	return out, nil
 }
 
+// Debug returns raw discovery data for one-off diagnostics: the TXT records
+// of vms.<app>.internal, the AAAA of <app>.internal, and the machine-id set
+// this resolver currently parses. Temporary — remove after verifying.
+func (a *Resolver) Debug(ctx context.Context) map[string]any {
+	res := a.res
+	if res == nil {
+		res = net.DefaultResolver
+	}
+	lctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	out := map[string]any{"self": a.self, "app": a.app}
+	if txts, err := res.LookupTXT(lctx, "vms."+a.app+".internal"); err != nil {
+		out["vms_txt_err"] = err.Error()
+	} else {
+		out["vms_txt"] = txts
+	}
+	if ips, err := res.LookupHost(lctx, a.app+".internal"); err != nil {
+		out["app_aaaa_err"] = err.Error()
+	} else {
+		out["app_aaaa"] = ips
+	}
+	out["parsed_machines"] = a.machines(ctx)
+	return out
+}
+
 // machines returns the cached machine-id set (peers + self), refreshing from
 // Fly DNS when the cache is older than ttl. On lookup failure it serves the
 // last good set, or falls back to just self (degraded → serve-here).
