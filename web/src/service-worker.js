@@ -1,6 +1,9 @@
-// confab service worker: fast repeat loads, never stale deploys, and the
-// relay WebSocket is never intercepted. No push handling — confab has none.
-const CACHE = "confab-shell-v1";
+// confab service worker: the app shell is served NETWORK-FIRST so an online user
+// always runs current code (the cache is only an offline fallback). This avoids
+// stale/mixed asset versions — e.g. a fresh index.html paired with an old app.js
+// — which can leave new UI wired to missing handlers. The relay WebSocket is
+// never intercepted. No push handling — confab has none.
+const CACHE = "confab-shell-v2";
 const SHELL = [
   "/", "/index.html", "/app.js", "/call.js", "/style.css",
   "/gloam.css", "/gloam.js", "/wasm_exec.js", "/manifest.json", "/favicon.svg",
@@ -22,6 +25,8 @@ self.addEventListener("activate", (ev) => {
   );
 });
 
+// Network-first: fresh when online (updates the cache), fall back to cache
+// (then the shell root) only when offline.
 async function networkFirst(req) {
   try {
     const res = await fetch(req);
@@ -33,25 +38,9 @@ async function networkFirst(req) {
   }
 }
 
-async function staleWhileRevalidate(req) {
-  const cached = await caches.match(req);
-  const fetching = fetch(req)
-    .then(async (res) => {
-      const c = await caches.open(CACHE);
-      c.put(req, res.clone());
-      return res;
-    })
-    .catch(() => cached);
-  return cached || fetching;
-}
-
 self.addEventListener("fetch", (ev) => {
   const url = new URL(ev.request.url);
   if (ev.request.method !== "GET" || url.origin !== location.origin) return;
   if (url.pathname === "/ws") return; // the relay socket is sacred
-  if (ev.request.mode === "navigate" || url.pathname === "/confab.wasm") {
-    ev.respondWith(networkFirst(ev.request));
-    return;
-  }
-  ev.respondWith(staleWhileRevalidate(ev.request));
+  ev.respondWith(networkFirst(ev.request)); // whole shell is network-first
 });
