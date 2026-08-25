@@ -47,7 +47,7 @@ func dashboardConfigFromEnv() (dashboard.Config, bool) {
 	key := os.Getenv("DASHBOARD_COOKIE_KEY")
 	base := os.Getenv("DASHBOARD_BASE_URL")
 	var users []string
-	for _, u := range strings.Split(os.Getenv("DASHBOARD_ALLOW"), ",") {
+	for u := range strings.SplitSeq(os.Getenv("DASHBOARD_ALLOW"), ",") {
 		if u = strings.TrimSpace(u); u != "" {
 			users = append(users, u)
 		}

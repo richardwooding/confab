@@ -171,7 +171,7 @@ func TestRTCICEOrdering(t *testing.T) {
 func TestSeventhJoinerRejected(t *testing.T) {
 	url := startRelay(t)
 	_, phrase := hostEnd(t, url)
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		drain(joinEnd(t, url, phrase))
 	}
 	_, err := session.Join(testCtx(t), url, phrase, proto.Options()...)
