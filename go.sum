@@ -6,8 +6,8 @@ github.com/coder/websocket v1.8.15 h1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNU
 github.com/coder/websocket v1.8.15/go.mod h1:NX3SzP+inril6yawo5CQXx8+fk145lPDC6pumgx0mVg=
 github.com/fxamacker/cbor/v2 v2.9.2 h1:X4Ksno9+x3cz0TZv69ec1hxP/+tymuR8PXQJyDwfh78=
 github.com/fxamacker/cbor/v2 v2.9.2/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/richardwooding/flyaffinity v0.1.1 h1:lDmftpzer/VRezDUYPTF3mJOvgWefvYflcIxoMXIhxk=
-github.com/richardwooding/flyaffinity v0.1.1/go.mod h1:zJnzNZ0CptHO2tnFe2zBoKQCg4ORVcvzboBenpqGBAM=
+github.com/richardwooding/flyaffinity v0.1.2 h1:9IIA/wcVqnOAdJqOx5BzNB0TIaS42B/V/ZxqYG+xOTk=
+github.com/richardwooding/flyaffinity v0.1.2/go.mod h1:xI6ygC90T4Uwi2NAod2bQ9RJfvkL5dg4BUWeCpVMtw8=
 github.com/richardwooding/parley v0.6.0 h1:jAPAgp8wyqCIbwLB/sSG1KZPn7CrCfRgWnhtdKuRmn0=
 github.com/richardwooding/parley v0.6.0/go.mod h1:g2jk0VmqWc7IhVKVLDCUPjo9t3c3ClSu1pPER+UksKI=
 github.com/schollz/pake/v3 v3.2.0 h1:WKHZVU8ulWRgXTMH6mpynz2cl2tBRo0G1McAcRslB04=
