@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: richardwooding/codemetrics@v0.12.5
+      - uses: richardwooding/codemetrics@v0.12.7
         with:
           max-cognitive: "15"
 
