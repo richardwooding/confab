@@ -3,7 +3,7 @@ module github.com/richardwooding/confab
 go 1.27.0
 
 require (
-	github.com/andybalholm/brotli v1.2.2
+	github.com/andybalholm/brotli v1.2.3
 	github.com/richardwooding/flyaffinity v0.1.3
 	github.com/richardwooding/parley v0.6.2
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
