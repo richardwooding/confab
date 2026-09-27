@@ -7,7 +7,7 @@ require (
 	github.com/richardwooding/flyaffinity v0.1.3
 	github.com/richardwooding/parley v0.6.2
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	golang.org/x/time v0.15.0
+	golang.org/x/time v0.16.0
 )
 
 require (
