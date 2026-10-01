@@ -5,7 +5,7 @@ go 1.27.0
 require (
 	github.com/andybalholm/brotli v1.2.4
 	github.com/richardwooding/flyaffinity v0.1.3
-	github.com/richardwooding/parley v0.6.3
+	github.com/richardwooding/parley v0.6.4
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	golang.org/x/time v0.16.0
 )
