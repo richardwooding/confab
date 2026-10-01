@@ -3,7 +3,7 @@
 // stale/mixed asset versions — e.g. a fresh index.html paired with an old app.js
 // — which can leave new UI wired to missing handlers. The relay WebSocket is
 // never intercepted. No push handling — confab has none.
-const CACHE = "confab-shell-v2";
+const CACHE = "confab-shell-v3";
 const SHELL = [
   "/", "/index.html", "/app.js", "/call.js", "/style.css",
   "/gloam.css", "/gloam.js", "/wasm_exec.js", "/manifest.json", "/favicon.svg",

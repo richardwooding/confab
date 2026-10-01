@@ -14,7 +14,8 @@
     memberIds: [],      // numeric ids incl. self
     phrase: "",
     url: "",
-    mode: "",           // "create" | "join" (what preflight leads to)
+    mode: "",           // "create" | "host" | "join" (what preflight leads to)
+    hostPhrase: "",     // for "host": the phrase another app chose
     inCall: false,
     chatOpen: false,
     unread: 0,
@@ -66,28 +67,41 @@
   // same-document navigation (only the #phrase changes): route it to
   // preflight exactly like a fresh load would.
   window.addEventListener("hashchange", () => {
-    const invite = decodeURIComponent(location.hash.slice(1)).trim();
-    if (!state.inCall && invite) {
-      $("join-phrase").value = invite;
-      preflight("join");
-    }
+    if (!state.inCall) routeHash();
   });
+
+  // routeHash sends a link straight to preflight. #<phrase> joins a call;
+  // #host/<phrase> starts one under a phrase another app chose and already
+  // shared (satchel's Call menu does this), so the host never has to copy a
+  // fresh phrase back out of the browser.
+  function routeHash() {
+    const h = decodeURIComponent(location.hash.slice(1)).trim();
+    if (!h) return;
+    if (h.startsWith("host/")) {
+      state.hostPhrase = h.slice("host/".length).trim();
+      if (state.hostPhrase) preflight("host");
+      return;
+    }
+    $("join-phrase").value = h;
+    preflight("join");
+  }
 
   // ---- preflight --------------------------------------------------------
   async function preflight(mode) {
     state.mode = mode;
     show("preflight");
-    $("preflight-title").textContent = mode === "create" ? "Start your call" : "Ready to join?";
-    $("btn-go").textContent = mode === "create" ? "Start call" : "Join call";
+    const starting = mode === "create" || mode === "host";
+    $("preflight-title").textContent = starting ? "Start your call" : "Ready to join?";
+    $("btn-go").textContent = starting ? "Start call" : "Join call";
     $("pf-name").value = $("name").value || localStorage.getItem("confab-name") || "";
     const ctx = $("preflight-context");
     if (mode === "create") {
       ctx.textContent = "You'll get a fresh phrase to share.";
     } else {
-      ctx.textContent = "Joining ";
+      ctx.textContent = mode === "host" ? "Starting " : "Joining ";
       const ph = document.createElement("span");
       ph.className = "phrase-inline";
-      ph.textContent = phraseValue();
+      ph.textContent = mode === "host" ? state.hostPhrase : phraseValue();
       ctx.appendChild(ph);
     }
     const got = await window.confabCall.acquire();
@@ -121,6 +135,7 @@
     const name = $("pf-name").value.trim();
     localStorage.setItem("confab-name", name);
     if (state.mode === "create") send({ type: "create", name });
+    else if (state.mode === "host") send({ type: "host", phrase: state.hostPhrase, name });
     else send({ type: "join", phrase: phraseValue(), name });
     $("btn-go").disabled = true;
   });
@@ -201,12 +216,8 @@
     "core.ready"(e) {
       $("btn-action").disabled = false;
       $("home-status").textContent = "";
-      const invite = decodeURIComponent(location.hash.slice(1)).trim();
-      if (invite) {
-        // Invitees never see the start/join choice: straight to preflight.
-        $("join-phrase").value = invite;
-        preflight("join");
-      }
+      // Invitees never see the start/join choice: straight to preflight.
+      routeHash();
     },
     "error"(e) {
       toast(e.message);

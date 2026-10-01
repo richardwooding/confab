@@ -16,6 +16,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"strings"
 	"sync"
 	"syscall/js"
@@ -79,6 +80,7 @@ func emitError(msg string) { emit("error", map[string]any{"message": msg}) }
 
 var commands = map[string]func(command){
 	"create":     func(c command) { create(c.Name) },
+	"host":       func(c command) { hostPhrase(c.Phrase, c.Name) },
 	"join":       func(c command) { join(c.Phrase, c.Name) },
 	"leave":      func(command) { leave() },
 	"chat.say":   func(c command) { say(c.Text) },
@@ -122,6 +124,33 @@ func create(name string) {
 		emitError("couldn't start a call: " + err.Error())
 		return
 	}
+	created(client, phrase, name)
+}
+
+// hostPhrase starts a call under a phrase chosen elsewhere — another app
+// (satchel) mints it and shares it while it opens #host/<phrase>. If that
+// call already exists, the link was opened twice: join it instead.
+func hostPhrase(phrase, name string) {
+	phrase = strings.TrimSpace(phrase)
+	if phrase == "" {
+		emitError("that link has no phrase")
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	client, err := session.HostWithPhrase(ctx, relayURL(), phrase, proto.Options()...)
+	if errors.Is(err, session.ErrSessionExists) {
+		join(phrase, name)
+		return
+	}
+	if err != nil {
+		emitError("couldn't start a call: " + err.Error())
+		return
+	}
+	created(client, phrase, name)
+}
+
+func created(client *session.Client, phrase, name string) {
 	start(client, name)
 	url := shareURL(phrase)
 	png, err := qrcode.Encode(url, qrcode.Medium, 220)
